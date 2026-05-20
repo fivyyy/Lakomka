@@ -1,15 +1,3 @@
--- --------------------------------------------------------
--- База данных: lomaka
--- Магазин лакомств для питомцев
--- --------------------------------------------------------
-
-CREATE DATABASE IF NOT EXISTS `lomaka` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `lomaka`;
-
--- --------------------------------------------------------
--- Таблица: users
--- --------------------------------------------------------
-
 CREATE TABLE IF NOT EXISTS `users` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -24,13 +12,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_unique` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
--- Данные: два пользователя
--- Пароли зашифрованы через bcrypt
--- Администратор: admin@lakomka.ru / admin123
--- Пользователь:  user@lakomka.ru  / user123
--- --------------------------------------------------------
 
 INSERT INTO `users` (`name`, `email`, `phone`, `password`, `is_admin`, `email_verified_at`, `remember_token`, `created_at`, `updated_at`) VALUES
 (
@@ -56,10 +37,6 @@ INSERT INTO `users` (`name`, `email`, `phone`, `password`, `is_admin`, `email_ve
   NOW()
 );
 
--- --------------------------------------------------------
--- Таблица: sessions (для хранения сессий Laravel)
--- --------------------------------------------------------
-
 CREATE TABLE IF NOT EXISTS `sessions` (
   `id` varchar(255) NOT NULL,
   `user_id` bigint(20) UNSIGNED DEFAULT NULL,
@@ -71,10 +48,6 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   KEY `sessions_user_id_index` (`user_id`),
   KEY `sessions_last_activity_index` (`last_activity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
--- Таблица: migrations (нужна Laravel)
--- --------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `migrations` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,

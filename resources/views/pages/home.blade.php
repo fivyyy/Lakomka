@@ -55,7 +55,7 @@
     </div>
     <div class="products-grid">
         @foreach($products as $product)
-        <div class="product-card">
+        <div class="product-card" onclick="window.location='{{ route('catalog.show', $product['id']) }}'" style="cursor:pointer">
             <div class="product-img product-img-{{ $product['color'] }}">
                 <span class="product-badge badge-{{ $product['badge_type'] }}">{{ $product['badge'] }}</span>
                 {{ $product['emoji'] }}
@@ -70,7 +70,7 @@
                         @endif
                         <span class="price {{ $product['price_old'] ? 'price-sale' : '' }}">{{ $product['price'] }} ₽</span>
                     </div>
-                    <form method="POST" action="{{ route('cart.add') }}">
+                    <form method="POST" action="{{ route('cart.add') }}" onclick="event.stopPropagation()">
                         @csrf
                         <input type="hidden" name="id" value="{{ $product['id'] }}">
                         <input type="hidden" name="name" value="{{ $product['name'] }}">

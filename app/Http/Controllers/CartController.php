@@ -20,7 +20,7 @@ class CartController extends Controller
         $id   = $request->id;
 
         if (isset($cart[$id])) {
-            $cart[$id]['qty']++;
+            $cart[$id]['qty'] += max(1, (int) $request->get('qty', 1));
         } else {
             $cart[$id] = [
                 'name'  => $request->name,
@@ -28,7 +28,7 @@ class CartController extends Controller
                 'emoji' => $request->emoji,
                 'color' => $request->color,
                 'sub'   => $request->sub,
-                'qty'   => 1,
+                'qty'   => max(1, (int) $request->get('qty', 1)),
             ];
         }
 

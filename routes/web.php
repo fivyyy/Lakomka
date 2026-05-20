@@ -17,7 +17,7 @@ use App\Http\Controllers\Admin\AdminController;
 // Публичные страницы
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog');
-Route::get('/catalog/{product}', [CatalogController::class, 'show'])->name('catalog.show');
+Route::get('/catalog/{id}', [CatalogController::class, 'show'])->name('catalog.show');
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles');
 Route::get('/articles/{article}', [ArticleController::class, 'show'])->name('articles.show');
 Route::get('/promos', [PromoController::class, 'index'])->name('promos');
