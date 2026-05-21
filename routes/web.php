@@ -1,0 +1,90 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\PromoController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\FaqController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\AdminController;
+
+// Публичные страницы
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog');
+Route::get('/catalog/{id}', [CatalogController::class, 'show'])->name('catalog.show');
+Route::get('/articles', [ArticleController::class, 'index'])->name('articles');
+Route::get('/articles/{article}', [ArticleController::class, 'show'])->name('articles.show');
+Route::get('/promos', [PromoController::class, 'index'])->name('promos');
+Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
+Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+Route::get('/faq', [FaqController::class, 'index'])->name('faq');
+Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
+Route::post('/contacts', [ContactController::class, 'send'])->name('contacts.send');
+Route::get('/about', [AboutController::class, 'index'])->name('about');
+
+// Корзина
+Route::get('/cart', [CartController::class, 'index'])->name('cart');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+
+// Авторизация
+Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Личный кабинет (только для авторизованных)
+Route::middleware('auth')->group(function () {
+    Route::get('/account', [AccountController::class, 'index'])->name('account');
+    Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
+    Route::get('/account/profile', [AccountController::class, 'profile'])->name('account.profile');
+    Route::post('/account/profile', [AccountController::class, 'updateProfile'])->name('account.profile.update');
+    Route::get('/account/addresses', [AccountController::class, 'addresses'])->name('account.addresses');
+});
+
+// Админ-панель (только для is_admin)
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'is_admin'])->group(function () {
+    Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/orders', [AdminController::class, 'orders'])->name('orders');
+    Route::get('/products', [AdminController::class, 'products'])->name('products');
+    Route::get('/users', [AdminController::class, 'users'])->name('users');
+    Route::get('/reviews', [AdminController::class, 'reviews'])->name('reviews');
+    Route::get('/articles', [AdminController::class, 'articles'])->name('articles');
+    Route::get('/promos', [AdminController::class, 'promos'])->name('promos');
+    
+});
+// Страница с формой создания
+Route::get('/admin/products/create', [AdminController::class, 'createProduct'])->name('admin.products.create');
+// Обработчик сохранения в БД
+Route::post('/admin/products/store', [AdminController::class, 'storeProduct'])->name('admin.products.store');
+// Маршрут для обработки оформления заказа
+Route::post('/cart/checkout', [\App\Http\Controllers\HomeController::class, 'makeOrder'])->name('cart.checkout');
+Route::get('/fix-db', function () {
+    // Если колонки нет, создаем её и остальные недостающие поля
+    if (!\Illuminate\Support\Facades\Schema::hasColumn('orders', 'client_name')) {
+    }
+    return 'Колонки уже существуют! Всё готово.';
+});
+// Кнопка выполнения заказа
+Route::post('/admin/orders/{id}/complete', [\App\Http\Controllers\Admin\AdminController::class, 'completeOrder'])->name('admin.orders.complete');
+// Для клиентов: отправка отзыва
+Route::post('/reviews/store', [\App\Http\Controllers\HomeController::class, 'storeReview'])->name('reviews.store');
+
+// Для админа: одобрение и удаление
+Route::post('/admin/reviews/{id}/approve', [\App\Http\Controllers\Admin\AdminController::class, 'approveReview'])->name('admin.reviews.approve');
+Route::delete('/admin/reviews/{id}/delete', [\App\Http\Controllers\Admin\AdminController::class, 'deleteReview'])->name('admin.reviews.delete');
+// Отправка сообщения со страницы контактов
+Route::post('/contacts/send', [\App\Http\Controllers\HomeController::class, 'sendMessage'])->name('contacts.send');
+// Управление сообщениями в админке
+Route::get('/admin/messages', [\App\Http\Controllers\Admin\AdminController::class, 'messages'])->name('admin.messages');
+Route::post('/admin/messages/{id}/read', [\App\Http\Controllers\Admin\AdminController::class, 'readMessage'])->name('admin.messages.read');
+Route::delete('/admin/messages/{id}/delete', [\App\Http\Controllers\Admin\AdminController::class, 'deleteMessage'])->name('admin.messages.delete');
+Route::post('/admin/messages/reply', [\App\Http\Controllers\Admin\AdminController::class, 'replyMessage'])->name('admin.messages.reply');
