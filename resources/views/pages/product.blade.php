@@ -1,130 +1,169 @@
+HTML
+@php
+    // Упрощённая и безопасная проверка типа данных без сложных конструкций
+    $isObj = is_object($product);
+    
+    // Если контроллер по ошибке передал коллекцию (массив массивов) вместо одного товара
+    if (!$isObj && isset($product[0])) {
+        $reqId = request()->route('id') ?: request()->id;
+        foreach ($product as $item) {
+            if (is_array($item) && isset($item['id']) && $item['id'] == $reqId) {
+                $product = $item;
+                break;
+            } elseif (is_object($item) && isset($item->id) && $item->id == $reqId) {
+                $product = $item;
+                $isObj = true;
+                break;
+            }
+        }
+    }
+
+    // Финально определяем переменные, чтобы Blade не ругался на Property/Key not exist
+    $pName        = $isObj ? ($product->name ?? '') : ($product['name'] ?? '');
+    $pDesc        = $isObj ? ($product->description ?? '') : ($product['description'] ?? '');
+    $pColor       = $isObj ? ($product->color ?? 'green') : ($product['color'] ?? 'green');
+    $pBadge       = $isObj ? ($product->badge ?? '') : ($product['badge'] ?? '');
+    $pBadgeType   = $isObj ? ($product->badge_type ?? 'hit') : ($product['badge_type'] ?? 'hit');
+    $pEmoji       = $isObj ? ($product->emoji ?? '🐾') : ($product['emoji'] ?? '🐾');
+    $pSub         = $isObj ? ($product->sub ?? '') : ($product['sub'] ?? '');
+    $pPrice       = $isObj ? ($product->price ?? 0) : ($product['price'] ?? 0);
+    $pPriceOld    = $isObj ? ($product->price_old ?? null) : ($product['price_old'] ?? null);
+    $pAnimal      = $isObj ? ($product->animal ?? '—') : ($product['animal'] ?? '—');
+    $pWeight      = $isObj ? ($product->weight ?? null) : ($product['weight'] ?? null);
+    $pAge         = $isObj ? ($product->age ?? 'Любой') : ($product['age'] ?? 'Любой');
+    $pFeatures    = $isObj ? ($product->features ?? []) : ($product['features'] ?? []);
+    $pId          = $isObj ? ($product->id ?? 0) : ($product['id'] ?? 0);
+    $pComp        = $isObj ? ($product->composition ?? '') : ($product['composition'] ?? '');
+@endphp
+
 @extends('layouts.app')
-@section('title', $product['name'])
-@section('description', $product['description'])
+@section('title', $pName)
+@section('description', $pDesc)
 
 @section('content')
 <div class="section">
 
     {{-- Breadcrumb --}}
-    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:28px">
-        <a href="{{ route('home') }}" style="color:var(--muted);text-decoration:none">Главная</a>
+    <div class="product-breadcrumb">
+        <a href="{{ route('home') }}">Главная</a>
         <span>›</span>
-        <a href="{{ route('catalog') }}" style="color:var(--muted);text-decoration:none">Каталог</a>
+        <a href="{{ route('catalog') }}">Каталог</a>
         <span>›</span>
-        <span style="color:var(--text)">{{ $product['name'] }}</span>
+        <span>{{ $pName }}</span>
     </div>
 
     {{-- Основная карточка товара --}}
-    <div style="display:grid;grid-template-columns:420px 1fr;gap:40px;margin-bottom:48px">
+    <div class="product-single-grid">
 
-        {{-- Фото --}}
-        <div>
-            <div class="product-img product-img-{{ $product['color'] }}"
-                 style="height:360px;border-radius:24px;font-size:120px;position:relative">
-                <span class="product-badge badge-{{ $product['badge_type'] }}"
-                      style="font-size:13px;padding:6px 14px">{{ $product['badge'] }}</span>
-                {{ $product['emoji'] }}
+        {{-- Левая колонка: Фото и Характеристики --}}
+        <div class="product-media-column">
+            <div class="product-img product-img-{{ $pColor }} product-main-img">
+                @if($pBadge)
+                <span class="product-badge badge-{{ $pBadgeType }} product-badge-large">
+                    {{ $pBadge }}
+                </span>
+                @endif
+                {{ $pEmoji }}
             </div>
 
             {{-- Характеристики --}}
-            <div style="background:var(--white);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-top:16px">
-                <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:12px">Характеристики</div>
-                <div style="display:flex;flex-direction:column;gap:8px">
-                    <div style="display:flex;justify-content:space-between;font-size:13px;padding-bottom:8px;border-bottom:1px solid var(--border)">
-                        <span style="color:var(--muted)">Для животных</span>
-                        <span style="font-weight:500">{{ $product['animal'] }}</span>
+            <div class="product-specs-card">
+                <div class="product-specs-title">Характеристики</div>
+                <div class="product-specs-list">
+                    <div class="product-spec-item">
+                        <span class="spec-label">Для животных</span>
+                        <span class="spec-value">{{ $pAnimal }}</span>
                     </div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;padding-bottom:8px;border-bottom:1px solid var(--border)">
-                        <span style="color:var(--muted)">Вес упаковки</span>
-                        <span style="font-weight:500">{{ $product['weight'] }}</span>
+                    <div class="product-spec-item">
+                        <span class="spec-label">Вес упаковки</span>
+                        <span class="spec-value">{{ $pWeight ?: ($pSub ?: '—') }}</span>
                     </div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px">
-                        <span style="color:var(--muted)">Возраст</span>
-                        <span style="font-weight:500">{{ $product['age'] }}</span>
+                    <div class="product-spec-item border-none">
+                        <span class="spec-label">Возраст</span>
+                        <span class="spec-value">{{ $pAge }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Информация --}}
-        <div>
-            <div style="display:flex;gap:8px;margin-bottom:12px">
-                <span class="product-badge badge-{{ $product['badge_type'] }}" style="position:static;font-size:12px;padding:5px 12px">
-                    {{ $product['badge'] }}
+        {{-- Правая колонка: Информация о товаре --}}
+        <div class="product-info-column">
+            <div class="product-meta-badges">
+                @if($pBadge)
+                <span class="product-badge badge-{{ $pBadgeType }} static-badge">
+                    {{ $pBadge }}
                 </span>
-                <span style="font-size:12px;color:var(--muted);padding:5px 0">{{ $product['sub'] }}</span>
+                @endif
+                <span class="product-subtext">{{ $pSub }}</span>
             </div>
 
-            <h1 style="font-family:'Playfair Display',serif;font-size:32px;color:var(--text);margin-bottom:16px;line-height:1.2">
-                {{ $product['name'] }}
+            <h1 class="product-title-heading">
+                {{ $pName }}
             </h1>
 
             {{-- Цена --}}
-            <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px">
-                @if($product['price_old'])
-                <span style="font-size:20px;color:var(--light);text-decoration:line-through">{{ $product['price_old'] }} ₽</span>
+            <div class="product-price-row">
+                @if($pPriceOld)
+                <span class="product-price-old">{{ $pPriceOld }} ₽</span>
                 @endif
-                <span style="font-family:'Playfair Display',serif;font-size:40px;color:{{ $product['price_old'] ? 'var(--coral)' : 'var(--text)' }}">
-                    {{ $product['price'] }} ₽
+                <span class="product-price-current {{ $pPriceOld ? 'has-sale' : '' }}">
+                    {{ $pPrice }} ₽
                 </span>
-                @if($product['price_old'])
-                <span style="background:var(--coral);color:#fff;font-size:12px;padding:4px 10px;border-radius:20px;font-weight:500">
-                    Скидка {{ round((1 - $product['price'] / $product['price_old']) * 100) }}%
+                @if($pPriceOld && $pPriceOld > 0)
+                <span class="product-sale-badge">
+                    Скидка {{ round((1 - $pPrice / $pPriceOld) * 100) }}%
                 </span>
                 @endif
             </div>
 
             {{-- Описание --}}
-            <p style="font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:24px">
-                {{ $product['description'] }}
+            <p class="product-description-text">
+                {{ $pDesc }}
             </p>
 
             {{-- Преимущества --}}
-                        @if(!empty($product->features))
-                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">
-                            @foreach($product->features as $feature)
-                            <span style="background:var(--green-pale);color:var(--green);font-size:12px;padding:6px 14px;border-radius:20px;font-weight:500">
-                                ✓ {{ $feature }}
-                            </span>
-                            @endforeach
-                        </div>
-                        @endif
+            @if(!empty($pFeatures) && is_array($pFeatures))
+            <div class="product-features-wrap">
+                @foreach($pFeatures as $feature)
+                <span class="product-feature-tag">
+                    ✓ {{ $feature }}
+                </span>
+                @endforeach
+            </div>
+            @endif
 
             {{-- Количество и кнопка --}}
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px">
-                <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:12px;overflow:hidden">
-                    <button onclick="changeQty(-1)"
-                            style="width:44px;height:48px;border:none;background:var(--white);font-size:20px;cursor:pointer;color:var(--text)">−</button>
-                    <span id="qtyVal" style="min-width:44px;text-align:center;font-size:16px;font-weight:500">1</span>
-                    <button onclick="changeQty(1)"
-                            style="width:44px;height:48px;border:none;background:var(--white);font-size:20px;cursor:pointer;color:var(--text)">+</button>
+            <div class="product-purchase-row">
+                <div class="qty-counter">
+                    <button onclick="changeQty(-1)" class="qty-counter-btn">−</button>
+                    <span id="qtyVal" class="qty-counter-val">1</span>
+                    <button onclick="changeQty(1)" class="qty-counter-btn">+</button>
                 </div>
 
-                <form method="POST" action="{{ route('cart.add') }}" id="addToCartForm" style="flex:1">
+                <form method="POST" action="{{ route('cart.add') }}" id="addToCartForm" class="cart-form-submit">
                     @csrf
-                    <input type="hidden" name="id"    value="{{ $product['id'] }}">
-                    <input type="hidden" name="name"  value="{{ $product['name'] }}">
-                    <input type="hidden" name="price" value="{{ $product['price'] }}">
-                    <input type="hidden" name="emoji" value="{{ $product['emoji'] }}">
-                    <input type="hidden" name="color" value="{{ $product['color'] }}">
-                    <input type="hidden" name="sub"   value="{{ $product['sub'] }}">
+                    <input type="hidden" name="id"    value="{{ $pId }}">
+                    <input type="hidden" name="name"  value="{{ $pName }}">
+                    <input type="hidden" name="price" value="{{ $pPrice }}">
+                    <input type="hidden" name="emoji" value="{{ $pEmoji }}">
+                    <input type="hidden" name="color" value="{{ $pColor }}">
+                    <input type="hidden" name="sub"   value="{{ $pSub }}">
                     <input type="hidden" name="qty"   id="qtyInput" value="1">
-                    <button type="submit" class="btn btn-primary"
-                            style="width:100%;justify-content:center;padding:14px;font-size:15px">
+                    <button type="submit" class="btn btn-primary product-submit-btn">
                         🛒 Добавить в корзину
                     </button>
                 </form>
             </div>
 
             {{-- Доставка --}}
-            <div style="background:var(--warm);border-radius:14px;padding:14px 16px;display:flex;gap:16px">
-                <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
+            <div class="product-delivery-info">
+                <div class="delivery-info-item">
                     <span>🚚</span> Доставка 1–7 дней
                 </div>
-                <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--green);font-weight:500">
+                <div class="delivery-info-item text-green">
                     <span>✓</span> Бесплатно от 800 ₽
                 </div>
-                <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
+                <div class="delivery-info-item">
                     <span>🔄</span> Возврат 14 дней
                 </div>
             </div>
@@ -132,10 +171,12 @@
     </div>
 
     {{-- Состав --}}
-    <div style="background:var(--white);border-radius:20px;padding:28px;box-shadow:var(--shadow);margin-bottom:32px">
-        <div style="font-size:18px;font-weight:500;font-family:'Playfair Display',serif;margin-bottom:12px">Состав</div>
-        <p style="font-size:14px;color:var(--muted);line-height:1.7">{{ $product['composition'] }}</p>
+    @if($pComp)
+    <div class="product-composition-box">
+        <div class="composition-title">Состав</div>
+        <p class="composition-text">{{ $pComp }}</p>
     </div>
+    @endif
 
     {{-- Похожие товары --}}
     @if(!empty($related))
@@ -147,31 +188,40 @@
             </div>
             <a href="{{ route('catalog') }}" class="section-link">Весь каталог →</a>
         </div>
+        
         <div class="products-grid">
-            @foreach($related as $p)
-            <div class="product-card" onclick="window.location='{{ route('catalog.show', $p['id']) }}'" style="cursor:pointer">
-                <div class="product-img product-img-{{ $p['color'] }}">
-                    <span class="product-badge badge-{{ $p['badge_type'] }}">{{ $p['badge'] }}</span>
-                    {{ $p['emoji'] }}
+            @foreach($related as $r)
+            @php 
+                $rObj = is_object($r);
+                $rId = $rObj ? ($r->id ?? 0) : ($r['id'] ?? 0);
+            @endphp
+            <div class="product-card" onclick="window.location='{{ route('catalog.show', $rId) }}'">
+                <div class="product-img product-img-{{ $rObj ? ($r->color ?? 'green') : ($r['color'] ?? 'green') }}">
+                    <span class="product-badge badge-{{ $rObj ? ($r->badge_type ?? 'hit') : ($r['badge_type'] ?? 'hit') }}">
+                        {{ $rObj ? ($r->badge ?? '') : ($r['badge'] ?? '') }}
+                    </span>
+                    {{ $rObj ? ($r->emoji ?? '🐾') : ($r['emoji'] ?? '🐾') }}
                 </div>
                 <div class="product-body">
-                    <div class="product-name">{{ $p['name'] }}</div>
-                    <div class="product-sub">{{ $p['sub'] }}</div>
+                    <div class="product-name">{{ $rObj ? ($r->name ?? '') : ($r['name'] ?? '') }}</div>
+                    <div class="product-sub">{{ $rObj ? ($r->sub ?? '') : ($r['sub'] ?? '') }}</div>
                     <div class="product-footer">
                         <div>
-                            @if($p['price_old'])
-                            <span class="price-old">{{ $p['price_old'] }} ₽</span>
+                            @if($rObj ? ($r->price_old ?? null) : ($r['price_old'] ?? null))
+                            <span class="price-old">{{ $rObj ? $r->price_old : $r['price_old'] }} ₽</span>
                             @endif
-                            <span class="price {{ $p['price_old'] ? 'price-sale' : '' }}">{{ $p['price'] }} ₽</span>
+                            <span class="price {{ ($rObj ? ($r->price_old ?? null) : ($r['price_old'] ?? null)) ? 'price-sale' : '' }}">
+                                {{ $rObj ? ($r->price ?? 0) : ($r['price'] ?? 0) }} ₽
+                            </span>
                         </div>
                         <form method="POST" action="{{ route('cart.add') }}" onclick="event.stopPropagation()">
                             @csrf
-                            <input type="hidden" name="id"    value="{{ $p['id'] }}">
-                            <input type="hidden" name="name"  value="{{ $p['name'] }}">
-                            <input type="hidden" name="price" value="{{ $p['price'] }}">
-                            <input type="hidden" name="emoji" value="{{ $p['emoji'] }}">
-                            <input type="hidden" name="color" value="{{ $p['color'] }}">
-                            <input type="hidden" name="sub"   value="{{ $p['sub'] }}">
+                            <input type="hidden" name="id"    value="{{ $rId }}">
+                            <input type="hidden" name="name"  value="{{ $rObj ? ($r->name ?? '') : ($r['name'] ?? '') }}">
+                            <input type="hidden" name="price" value="{{ $rObj ? ($r->price ?? 0) : ($r['price'] ?? 0) }}">
+                            <input type="hidden" name="emoji" value="{{ $rObj ? ($r->emoji ?? '🐾') : ($r['emoji'] ?? '🐾') }}">
+                            <input type="hidden" name="color" value="{{ $rObj ? ($r->color ?? 'green') : ($r['color'] ?? 'green') }}">
+                            <input type="hidden" name="sub"   value="{{ $rObj ? ($r->sub ?? '') : ($r['sub'] ?? '') }}">
                             <button type="submit" class="add-btn">+</button>
                         </form>
                     </div>

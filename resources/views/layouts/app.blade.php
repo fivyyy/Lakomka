@@ -44,5 +44,27 @@ document.querySelectorAll('.filter-pills').forEach(group => {
     });
 });
 </script>
+
+<script>
+function toggleMobileMenu() {
+    const nav = document.getElementById('navMenu') || document.querySelector('.nav') || document.querySelector('.nav-menu');
+    if (nav) {
+        nav.classList.toggle('active');
+        // Добавим класс nav-menu для совместимости со стилями, если его там нет
+        nav.classList.add('nav-menu');
+        if(!nav.id) nav.id = 'navMenu';
+    }
+    
+    const btn = document.querySelector('.mobile-menu-toggle');
+    if (btn && nav) {
+        if(nav.classList.contains('active')) {
+            btn.textContent = '✕';
+        } else {
+            btn.textContent = '☰';
+        }
+    }
+}
+</script>
+
 </body>
 </html>
